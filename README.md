@@ -1,10 +1,11 @@
-# run-without-sse4.2
+# RUN, WITHOUT, SSE4.2 :3
 
-Instructions for running programs on x86_64 Linux CPUs **without SSE4.2 / SSE4.1 / SSSE3 / AVX** — e.g. AMD Athlon II X4, Phenom, Opteron K10, and similar pre-2008 microarchitectures.
+Instructions for running programs on x86_64 Linux CPUs **without SSE4.2 / SSE4.1 / SSSE3 / AVX** - e.g. AMD Athlon II X4, Phenom, Opteron K10, and similar pre-2008 microarchitectures.
 
-> **Prerequisite:** You need a working SSE4.2-free Bun binary first. Build one at [`bunihateyou/bun-no-sse4.2`](https://github.com/bunihateyou/bun-no-sse4.2) — a custom Bun v1.4.0 build with WebKit/JavaScriptCore compiled at `-march=barcelona`.
+> **Prerequisite:**
+> * SSE4.2-free Bun binary: [`bunihateyou/bun-no-sse4.2`](https://github.com/bunihateyou/bun-no-sse4.2) - a custom Bun v1.4.0 build with WebKit/JavaScriptCore compiled at `-march=barcelona`.
 >
-> The Bun binary alone isn't always enough — programs built *on top of* Bun can ship their own prebuilt SSE4.2 binaries that need separate attention. Below are instructions for two such programs.
+> Programs built with Bun can ship their own prebuilt SSE4.2 binaries that need separate attention. Below are instructions for such programs.
 
 ---
 
@@ -27,7 +28,7 @@ find ~/.bun/install/global -name 'pi_natives.linux-x64-baseline.node' \
   -exec cp target/release/libpi_natives.so {} \;
 ```
 
-> **After any `omp update`:** the SSE4.1 `.node` comes back from npm. Re-run the `cp` line above. The `modern` variant can be ignored — it's not loaded on non-AVX2 CPUs.
+> **After any `omp update`:** the SSE4.1 `.node` comes back from npm. Re-run the `cp` line above. The `modern` variant can be ignored - it's not loaded on non-AVX2 CPUs.
 
 ---
 
@@ -35,10 +36,10 @@ find ~/.bun/install/global -name 'pi_natives.linux-x64-baseline.node' \
 
 Repo: [`anthropics/claude-code`](https://github.com/anthropics/claude-code)
 
-Claude Code ships as a `bun build --compile` standalone binary — a 238 MB ELF with an embedded Bun runtime + JavaScriptCore baked in at modern ISA. It SIGILLs on K10 and can't be patched in-place. However, the bundled JS source can be **extracted** from the binary and run with our barcelona Bun instead:
+Claude Code ships as a `bun build --compile` standalone binary - a 238 MB ELF with an embedded Bun runtime + JavaScriptCore baked in at modern ISA. It SIGILLs on K10 and can't be patched in-place. However, the bundled JS source can be **extracted** from the binary and run with our barcelona Bun instead:
 
 ```sh
-# 1. Download the native binary (from npm — it's the same binary the curl installer gives)
+# 1. Download the native binary (from npm - it's the same binary the curl installer gives)
 mkdir -p ~/claude-code && cd ~/claude-code
 curl -sL -o cc.tgz "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-$(curl -s https://registry.npmjs.org/@anthropic-ai/claude-code/latest | grep -o '"version":"[^"]*"' | cut -d'"' -f4).tgz"
 mkdir -p cc-extract && tar xzf cc.tgz -C cc-extract
@@ -72,6 +73,6 @@ perl -i -pe 's/if\(f\.type==="api_system"\)return\{role:"system",content:f\.mess
 claude --version   # → 2.1.x (Claude Code)
 ```
 
-> **Note:** Claude Code's bundled source uses a `bun build --compile` format with a `\n---- Bun! ----\n` trailer. The extractor reads this format directly. The two `perl` patches fix: (a) model-ID-with-slashes causing a 404 on `/v1/models/{id}` validation, and (b) `role:"system"` in the messages array being rejected by some Anthropic-compatible endpoints. Neither patch affects functionality — they only bypass client-side validation and rewrap system messages.
+> **Note:** Claude Code's bundled source uses a `bun build --compile` format with a `\n---- Bun! ----\n` trailer. The extractor reads this format directly. The two `perl` patches fix: (a) model-ID-with-slashes causing a 404 on `/v1/models/{id}` validation, and (b) `role:"system"` in the messages array being rejected by some Anthropic-compatible endpoints. Neither patch affects functionality - they only bypass client-side validation and rewrap system messages.
 >
 > **After updating Claude Code:** re-run steps 1-4 to extract + patch the new version. The `DISABLE_UPDATES=1` env var in the wrapper prevents the auto-updater from replacing your setup silently.
