@@ -1,4 +1,4 @@
-note: this repo will be growing, opencode and others will be here soon.
+note: this repo is growing - more programs will be added over time.
 
 tip: use **watching** to get notifications on updates in this repo.
 # RUN, WITHOUT, SSE4.2 :3
