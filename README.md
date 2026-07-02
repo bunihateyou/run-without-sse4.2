@@ -75,3 +75,41 @@ claude --version   # → 2.1.x (Claude Code)
 > **Note:** Claude Code's bundled source uses a `bun build --compile` format with a `\n---- Bun! ----\n` trailer. The extractor reads this format directly. The two `perl` patches fix: (a) model-ID-with-slashes causing a 404 on `/v1/models/{id}` validation, and (b) `role:"system"` in the messages array being rejected by some Anthropic-compatible endpoints. Neither patch affects functionality - they only bypass client-side validation and rewrap system messages.
 >
 > **After updating Claude Code:** re-run steps 1-4 to extract + patch the new version. The `DISABLE_UPDATES=1` env var in the wrapper prevents the auto-updater from replacing your setup silently.
+
+---
+
+## [`sst/opencode`](https://github.com/sst/opencode)
+
+opencode ships as a `bun build --compile` standalone binary (160 MB) - same problem as Claude Code, the embedded Bun + JSC are compiled at modern ISA and SIGILL on K10. But unlike Claude Code, opencode is a monorepo you can clone and run directly from source with our barcelona Bun - no extraction needed:
+
+```sh
+# 1. Clone and install deps (large monorepo, takes a few minutes)
+git clone --depth 1 https://github.com/sst/opencode.git ~/opencode-src
+cd ~/opencode-src
+bun install
+
+# 2. Verify it runs (should print the ASCII logo + command list)
+cd packages/opencode
+bun run ./src/index.ts --help
+
+# 3. Wrapper script to run it from anywhere
+mkdir -p ~/opencode
+cat > ~/opencode/opencode <<'EOF'
+#!/bin/sh
+# Bun's JIT emits SSE4/AVX instructions even in barcelona builds.
+# Disabling it forces the interpreter, which is SSE3-safe.
+export BUN_JSC_useJIT=false
+# cd into the package dir so bunfig.toml + node_modules resolve correctly
+cd "$HOME/opencode-src/packages/opencode"
+exec "$HOME/bun-barcelona/bun" run ./src/index.ts "$@"
+EOF
+chmod +x ~/opencode/opencode
+ln -sf ~/opencode/opencode ~/.local/bin/opencode
+
+# 4. Verify
+opencode --help
+```
+
+> **`--version` shows "local":** opencode gets its version from a compile-time `define` (`OPENCODE_VERSION`). Running from source, this isn't set, so it falls back to `"local"`. Cosmetic only - all functionality works, including the TUI.
+>
+> **After updating opencode:** `cd ~/opencode-src && git pull && bun install`. No patches needed - opencode's native deps (`@parcel/watcher`, `tree-sitter-*`) are SSE4.2-free.
