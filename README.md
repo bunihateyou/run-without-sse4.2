@@ -9,9 +9,7 @@ Instructions for running programs on x86_64 Linux CPUs **without SSE4.2 / SSE4.1
 
 ---
 
-## <sub>`omp`</sub> (Oh-My-Pi)
-
-Repo: [`can1357/oh-my-pi`](https://github.com/can1357/oh-my-pi)
+## [`can1357/oh-my-pi`](https://github.com/can1357/oh-my-pi)
 
 `omp` depends on `@oh-my-pi/pi-natives`, a Rust/N-API native addon shipped as a prebuilt `.node` binary. Even the `"baseline"` variant is compiled at `target-cpu=x86-64-v2` (SSE4.1/SSSE3) and SIGILLs on K10 when loaded. You must rebuild it from source at `target-cpu=barcelona`:
 
@@ -32,9 +30,7 @@ find ~/.bun/install/global -name 'pi_natives.linux-x64-baseline.node' \
 
 ---
 
-## <sub>`claude-code`</sub> (Claude Code)
-
-Repo: [`anthropics/claude-code`](https://github.com/anthropics/claude-code)
+## [`anthropics/claude-code`](https://github.com/anthropics/claude-code)
 
 Claude Code ships as a `bun build --compile` standalone binary - a 238 MB ELF with an embedded Bun runtime + JavaScriptCore baked in at modern ISA. It SIGILLs on K10 and can't be patched in-place. However, the bundled JS source can be **extracted** from the binary and run with our barcelona Bun instead:
 
