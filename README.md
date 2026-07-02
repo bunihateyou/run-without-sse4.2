@@ -92,16 +92,20 @@ bun install
 cd packages/opencode
 bun run ./src/index.ts --help
 
-# 3. Wrapper script to run it from anywhere
+# 3. Wrapper script - resolves modules from the source dir without cd-ing,
+#    so opencode sees your actual working directory as the project
 mkdir -p ~/opencode
 cat > ~/opencode/opencode <<'EOF'
 #!/bin/sh
 # Bun's JIT emits SSE4/AVX instructions even in barcelona builds.
 # Disabling it forces the interpreter, which is SSE3-safe.
 export BUN_JSC_useJIT=false
-# cd into the package dir so bunfig.toml + node_modules resolve correctly
-cd "$HOME/opencode-src/packages/opencode"
-exec "$HOME/bun-barcelona/bun" run ./src/index.ts "$@"
+# Resolve modules and bunfig.toml from the opencode package dir without
+# changing the working directory, so opencode sees the caller's project.
+export NODE_PATH="$HOME/opencode-src/packages/opencode/node_modules:$HOME/opencode-src/node_modules"
+exec "$HOME/bun-barcelona/bun" \
+  --config="$HOME/opencode-src/packages/opencode/bunfig.toml" \
+  "$HOME/opencode-src/packages/opencode/src/index.ts" "$@"
 EOF
 chmod +x ~/opencode/opencode
 ln -sf ~/opencode/opencode ~/.local/bin/opencode
