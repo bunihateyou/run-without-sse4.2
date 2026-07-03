@@ -16,6 +16,8 @@ Instructions for running programs on x86_64 Linux CPUs **without SSE4.2 / SSE4.1
 
 `omp` depends on `@oh-my-pi/pi-natives`, a Rust/N-API native addon shipped as a prebuilt `.node` binary. Even the `"baseline"` variant is compiled at `target-cpu=x86-64-v2` (SSE4.1/SSSE3) and SIGILLs on K10 when loaded. You must rebuild it from source at `target-cpu=barcelona`:
 
+# MAKE SURE YOU HAVE LATEST OMP INSTALLED!!!
+# AND ADD ```sh export BUN_JSC_useJIT=false``` TO YOUR SHELL!!!
 ```sh
 git clone --depth 1 https://github.com/can1357/oh-my-pi.git /tmp/oh-my-pi
 cd /tmp/oh-my-pi
